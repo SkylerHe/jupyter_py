@@ -1,3 +1,15 @@
+
+# Credits
+__author__ = 'João Tonini'
+__copyright__ = 'Copyright 2024'
+__credits__ = None
+__version__ = str(math.pi**2)[:5]
+__maintainer__ = 'George Flanagin'
+__email__ = ['jtonini@richmond.edu']
+__status__ = 'Research'
+__license__ = 'MIT'
+
+
 import os
 import platform
 import subprocess
