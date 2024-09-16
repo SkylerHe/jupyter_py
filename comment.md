@@ -30,7 +30,7 @@ def custom_print(message_type):
 ```
 
 
-- call in main func
+- Is there any other place to call?
 ```
 # Display the initial messages
 custom_print("header")
@@ -39,7 +39,7 @@ custom_print("processing")
 ```
 
 
-- include `current_os` in the func below
+- include `current_os` in [default_browser](#default-browser)
 ```
 # Determine the current operating system
 current_os = platform.system()
@@ -64,7 +64,7 @@ def default_browser():
             browser_exe = None
     return browser_exe
 ```
-- include this part to the func above as an exception
+- include this part to [default_browser](#default-browser) as an exception
 ```
 launcher = default_browser()
 if not launcher:
@@ -87,7 +87,29 @@ runtime = 1
 thisjob = ""
 thisnode = ""
 ```
-- Nice :smile:
+- For future returncode in func [slurm_jupyter](#slurm-jupyter)
+```
+def run_command(cmd, shell=False, returncode=False):
+    try:
+        result = subprocess.run(cmd, shell=shell, check=True, text=True, capture_output=True)
+
+        if returncode:
+            return result.returncode
+        else:
+            return result.stdout
+    
+    except subprocess.CalledProcessError:
+        return None
+```
+- new func [checkopt_command](#checkopt-command)
+```
+def checkopt_command(cmd, shell=False):
+    try:
+        result = subprocess.check_output(cmd, shell=shell, stderr=subprocess.DEVNULL)
+        return result.decoded().strip()
+    except subprocess.CalledProcessError:
+        return None
+```
 ```
 # Function to run shell commands
 def run_command(cmd, shell=False):
@@ -109,7 +131,7 @@ def limit_time(runtime):
 ```
 # Skyler:
 def open_port(name_fragment, lower=9500, upper=9600):
-    result = subprocess.run(['ss', '-tuln'], capture_output=True, text=True).stdout
+    result = run_command(['ss', '-tuln'])
     filepath = os.path.expanduser(f"~/openport.{name_fragment}.txt")
     
     x = next((port for port in range(lower, upper+1) if f":{port}" not in result]), None)
@@ -131,7 +153,12 @@ def open_port(name_fragment, lower=9500, upper=9600):
     return None
 ```
 
-- :)
+```
+#Skyler:
+cmd = ['bash', 'open_port.sh']
+if port:
+    run_command(cmd).strip()
+```
 ```
 # Function to handle port script on HPC headnode
 def open_port_script(name_fragment):
@@ -143,7 +170,7 @@ def open_port_script(name_fragment):
 - Easier to maintain
 ```
 cmd = f"ssh {me}@{cluster} 'sinfo -o \"%P\"'"
-partitions = run_command(cmd, shell=True).split()
+partitions = run_command(cmd, shell=True).strip().split()
 ```
 ```
 # Function to validate partition
@@ -155,6 +182,69 @@ def valid_partition(partition):
     return partition in partitions
 ```
 
+- helper func for [slurm_jupyter](#slurm-jupyter)
+```
+def run_and_check(cmd, shell=False, returncode=False, sleep_time=None):
+    result = run_command(cmd, shell=shell, returncode=returncode)
+    if result != 0:
+        return False
+    if sleep_time:
+        time.sleep(sleep_time)
+    return True
+```
+```
+#Skyler:
+def slurm_jupyter():
+    # files/file paths variables
+    jp = 'jparams.txt'
+    computenode = os.path.expanduser("~/openport.computenode.txt")
+    tunnelspec = os.path.expanduser("~/tunnelspec.txt")
+
+
+    # os variables
+    gpu = os.environ.get('gpu', 'NONE')
+    partition = os.environ.get('partition')
+    runtime = os.environ.get('runtime')
+    
+   
+    with open(jp, 'r') as f1:
+        exec(f1.read(), globals())
+    #?
+    open_port_script('headnode')
+
+
+    gpu_option = "" if gpu == "NONE" else f"--gpus={gpu}"
+    s1_cmd = f"salloc --account {me} -p {partition} {gpu_option} --time={runtime}:00:00 --no-shell > salloc.txt 2>&1"
+    if not run_and_check(s1_cmd, shell=True, returncode=True, sleep_time=5):
+        return
+    
+    # cmd variables
+    job_cmd = "cat salloc.txt | head -1 | awk '{print $NF}'"
+    thisjob = checkopt_command(job_cmd, shell=True)
+        
+    node_cmd = f"squeue -o %N -j {thisjob} | tail -1"
+    thisnode = checkopt_command(node_cmd, shell=True)
+
+    s2_cmd = f"ssh {me}@{thisnode} 'source {thisscript} && open_port_script computenode'"
+    if not run_and_check(s2_cmd, shell=True, returncode=True, sleep_time=1):
+        return
+    
+    with open(computenode, 'r') as f2:
+        jupyter_port = f2.read().strip()
+    with open(tunnelspec, 'w') as f3:
+        w1 = f"ssh -q -f -N -L {jupyter_port}:{thisnode}:{jupyter_port} {me}@{cluster}\n"
+        w2 = f"export jupyter_port={jupyter_port}\n"
+
+        f3. write(w1, w2)
+
+    ssh1_cmd = f"ssh {me}@{thisnode} 'source /usr/local/sw/anaconda/anaconda3/bin/activate cleancondajupyter ; nohup {jupyter_exe} --ip=0.0.0.0 --port={jupyter_port} > jupyter.log 2>&1 & disown'"
+    ssh2_cmd = f"ssh {me}@{thisnode} 'tac jupyter.log | grep -a -m 1 \"127\\.0\\.0\\.1\" > urlspec.txt'"
+
+    run_command(ssh1_cmd, shell=True)
+    time.sleep(5)
+    run_command(ssh2_cmd, shell=True)
+
+```
 ```
 # Function to create SLURM job and set up tunnel
 def slurm_jupyter():
@@ -198,7 +288,7 @@ def slurm_jupyter():
     subprocess.run(f"ssh {me}@{thisnode} 'tac jupyter.log | grep -a -m 1 \"127\\.0\\.0\\.1\" > urlspec.txt'", shell=True, capture_output=True, text=True)
 ```
 
-
+- Similar problem with [slurm_jupyter](#slurm-jupyter)
 ```
 # Function to run the Jupyter setup
 def run_jupyter(args):
