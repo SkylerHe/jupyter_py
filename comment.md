@@ -49,7 +49,7 @@ current_os = platform.system()
 - use dict to replace if and elif, so it will be easier to maintain
     - e.g: `{'Darwin' : 'open'}`
 - The current method works great with logger
-```
+```Python
 # Determine the default browser launcher
 def default_browser():
     browser_exe = os.environ.get('BROWSER')
