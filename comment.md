@@ -98,11 +98,27 @@ def run_command(cmd, shell=False):
     except subprocess.CalledProcessError:
         return None
 ```
-- It could be args
+- :)
 ```
 # Function to limit runtime to a maximum of 8 hours
 def limit_time(runtime):
     return min(runtime, 8)
+```
+- [next](https://docs.python.org/3/library/pdb.html#pdbcommand-next)
+    - get the first port from the generator that is available
+```
+# Skyler:
+def open_port(name_fragment, lower=9500, upper=9600):
+    result = subprocess.run(['ss', '-tuln'], capture_output=True, text=True).stdout
+    filepath = os.path.expanduser(f"~/openport.{name_fragment}.txt")
+    
+    x = next((port for port in range(lower, upper+1) if f":{port}" not in result]), None)
+    if x is not None:
+        with open(filepath, 'w') as file:
+            file.write(f"{x}")
+        return x
+    return None
+```
 ```
 # Function to find an open port within a specified range
 def open_port(name_fragment, lower=9500, upper=9600):
@@ -113,13 +129,23 @@ def open_port(name_fragment, lower=9500, upper=9600):
                 file.write(f"{port}")
             return port
     return None
+```
 
+- :)
+```
 # Function to handle port script on HPC headnode
 def open_port_script(name_fragment):
     port = open_port(name_fragment)
     if port:
         run_command(['bash', 'open_port.sh'])
+```
 
+- Easier to maintain
+```
+cmd = f"ssh {me}@{cluster} 'sinfo -o \"%P\"'"
+partitions = run_command(cmd, shell=True).split()
+```
+```
 # Function to validate partition
 def valid_partition(partition):
     if not partition:
@@ -127,7 +153,9 @@ def valid_partition(partition):
 
     partitions = run_command(f"ssh {me}@{cluster} 'sinfo -o \"%P\"'", shell=True).split()
     return partition in partitions
+```
 
+```
 # Function to create SLURM job and set up tunnel
 def slurm_jupyter():
     with open('jparams.txt', 'r') as file:
@@ -168,7 +196,10 @@ def slurm_jupyter():
     subprocess.run(f"ssh {me}@{thisnode} 'source /usr/local/sw/anaconda/anaconda3/bin/activate cleancondajupyter ; nohup {jupyter_exe} --ip=0.0.0.0 --port={jupyter_port} > jupyter.log 2>&1 & disown'", shell=True, capture_output=True, text=True)
     time.sleep(5)
     subprocess.run(f"ssh {me}@{thisnode} 'tac jupyter.log | grep -a -m 1 \"127\\.0\\.0\\.1\" > urlspec.txt'", shell=True, capture_output=True, text=True)
+```
 
+
+```
 # Function to run the Jupyter setup
 def run_jupyter(args):
     if len(args) < 2:
@@ -215,6 +246,9 @@ def run_jupyter(args):
 
     if launcher:
         subprocess.run([launcher, url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+```
 
+```
 if __name__ == "__main__":
     run_jupyter(sys.argv[1:])
+```
