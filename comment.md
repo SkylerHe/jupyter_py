@@ -1,4 +1,4 @@
-```
+```Python
 # Credits
 __author__ = 'João Tonini'
 __copyright__ = 'Copyright 2024'
@@ -18,7 +18,7 @@ import shutil
 import sys
 ```
 - I really like the dictionary :smile:
-```
+```Python
 # Custom print function to control displayed messages
 def custom_print(message_type):
     messages = {
@@ -31,7 +31,7 @@ def custom_print(message_type):
 
 
 - Is there any other place to call?
-```
+```Python
 # Display the initial messages
 custom_print("header")
 custom_print("version")
@@ -40,7 +40,8 @@ custom_print("processing")
 
 
 - include `current_os` in [default_browser](#default_browser)
-```
+- The current method works great with logger
+```Python
 # Determine the current operating system
 current_os = platform.system()
 ```
@@ -65,7 +66,7 @@ def default_browser():
     return browser_exe
 ```
 - include this part to [default_browser](#default-browser) as an exception
-```
+```Python
 launcher = default_browser()
 if not launcher:
     sys.exit("Cannot determine how to start your browser. This script is not for you.")
@@ -76,7 +77,7 @@ if not launcher:
 - Environment variables, with their default values.(Global object)
 - Class variables
 - Config file
-```
+```Python
 # Variables
 cluster = "spydur"
 created_files = ["tunnelspec.txt", "urlspec.txt", "salloc.txt", "jparams.txt"]
@@ -88,7 +89,7 @@ thisjob = ""
 thisnode = ""
 ```
 - For future returncode in func [slurm_jupyter](#slurm-jupyter)
-```
+```Python
 def run_command(cmd, shell=False, returncode=False):
     try:
         result = subprocess.run(cmd, shell=shell, check=True, text=True, capture_output=True)
@@ -102,7 +103,7 @@ def run_command(cmd, shell=False, returncode=False):
         return None
 ```
 - new func [checkopt_command](#checkopt-command)
-```
+```Python
 def checkopt_command(cmd, shell=False):
     try:
         result = subprocess.check_output(cmd, shell=shell, stderr=subprocess.DEVNULL)
@@ -110,7 +111,7 @@ def checkopt_command(cmd, shell=False):
     except subprocess.CalledProcessError:
         return None
 ```
-```
+```Python
 # Function to run shell commands
 def run_command(cmd, shell=False):
     try:
@@ -121,14 +122,14 @@ def run_command(cmd, shell=False):
         return None
 ```
 - :)
-```
+```Python
 # Function to limit runtime to a maximum of 8 hours
 def limit_time(runtime):
     return min(runtime, 8)
 ```
 - [next](https://docs.python.org/3/library/pdb.html#pdbcommand-next)
     - get the first port from the generator that is available
-```
+```Python
 # Skyler:
 def open_port(name_fragment, lower=9500, upper=9600):
     result = run_command(['ss', '-tuln'])
@@ -141,7 +142,7 @@ def open_port(name_fragment, lower=9500, upper=9600):
         return x
     return None
 ```
-```
+```Python
 # Function to find an open port within a specified range
 def open_port(name_fragment, lower=9500, upper=9600):
     for port in range(lower, upper + 1):
@@ -153,7 +154,7 @@ def open_port(name_fragment, lower=9500, upper=9600):
     return None
 ```
 
-```
+```Python
 #Skyler:
 cmd = ['bash', 'open_port.sh']
 if port:
@@ -168,7 +169,7 @@ def open_port_script(name_fragment):
 ```
 
 - Easier to maintain
-```
+```Python
 cmd = f"ssh {me}@{cluster} 'sinfo -o \"%P\"'"
 partitions = run_command(cmd, shell=True).strip().split()
 ```
@@ -183,7 +184,7 @@ def valid_partition(partition):
 ```
 
 - helper func for [slurm_jupyter](#slurm-jupyter)
-```
+```Python
 def run_and_check(cmd, shell=False, returncode=False, sleep_time=None):
     result = run_command(cmd, shell=shell, returncode=returncode)
     if result != 0:
@@ -192,7 +193,7 @@ def run_and_check(cmd, shell=False, returncode=False, sleep_time=None):
         time.sleep(sleep_time)
     return True
 ```
-```
+```Python
 #Skyler:
 def slurm_jupyter():
     # files/file paths variables
@@ -245,7 +246,7 @@ def slurm_jupyter():
     run_command(ssh2_cmd, shell=True)
 
 ```
-```
+```Python
 # Function to create SLURM job and set up tunnel
 def slurm_jupyter():
     with open('jparams.txt', 'r') as file:
@@ -289,7 +290,7 @@ def slurm_jupyter():
 ```
 
 - Similar problem with [slurm_jupyter](#slurm-jupyter)
-```
+```Python
 # Function to run the Jupyter setup
 def run_jupyter(args):
     if len(args) < 2:
@@ -338,7 +339,7 @@ def run_jupyter(args):
         subprocess.run([launcher, url], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 ```
 
-```
+```Python
 if __name__ == "__main__":
     run_jupyter(sys.argv[1:])
 ```
