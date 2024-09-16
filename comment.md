@@ -16,8 +16,9 @@ import subprocess
 import time
 import shutil
 import sys
-
-
+```
+- I really like the dictionary :smile:
+```
 # Custom print function to control displayed messages
 def custom_print(message_type):
     messages = {
@@ -38,7 +39,7 @@ custom_print("processing")
 ```
 
 
-- including `current_os` in the func below
+- include `current_os` in the func below
 ```
 # Determine the current operating system
 current_os = platform.system()
@@ -46,6 +47,8 @@ current_os = platform.system()
 
 - import python module [webbrowser](https://docs.python.org/3/library/webbrowser.html#module-webbrowser)
 - use dict to replace if and elif, so it will be easier to maintain
+    - e.g: `{'Darwin' : 'open'}`
+- The current method works great with logger
 ```
 # Determine the default browser launcher
 def default_browser():
@@ -61,10 +64,19 @@ def default_browser():
             browser_exe = None
     return browser_exe
 ```
+- include this part to the func above as an exception
+```
 launcher = default_browser()
 if not launcher:
     sys.exit("Cannot determine how to start your browser. This script is not for you.")
+```
 
+
+
+- Environment variables, with their default values.(Global object)
+- Class variables
+- Config file
+```
 # Variables
 cluster = "spydur"
 created_files = ["tunnelspec.txt", "urlspec.txt", "salloc.txt", "jparams.txt"]
@@ -74,7 +86,9 @@ partition = "basic"
 runtime = 1
 thisjob = ""
 thisnode = ""
-
+```
+- Nice :smile:
+```
 # Function to run shell commands
 def run_command(cmd, shell=False):
     try:
@@ -83,11 +97,13 @@ def run_command(cmd, shell=False):
         return result.stdout.strip()
     except subprocess.CalledProcessError:
         return None
-
+```
+- It could be args
+```
 # Function to limit runtime to a maximum of 8 hours
 def limit_time(runtime):
     return min(runtime, 8)
-
+```
 # Function to find an open port within a specified range
 def open_port(name_fragment, lower=9500, upper=9600):
     for port in range(lower, upper + 1):
