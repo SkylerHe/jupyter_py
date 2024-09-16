@@ -39,7 +39,7 @@ custom_print("processing")
 ```
 
 
-- include `current_os` in [default_browser](#default-browser)
+- include `current_os` in [default_browser](#default_browser)
 ```
 # Determine the current operating system
 current_os = platform.system()
